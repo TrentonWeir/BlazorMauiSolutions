@@ -1,5 +1,32 @@
-﻿<h3>NewReceipt</h3>
+﻿@page "/Recipt"
+@using MonthlyReport.Data.Models;
+@inject MonthlyReport.Data.Services.CustomerService CustomerService
+
+<h3>NewReceipt</h3>
+
+<div>
+    <select class="form-select-lg">
+        @foreach(var customer in customers)
+        {
+            <option value="@customer.Id">@customer.FistName @customer.LastName</option>
+        }
+    </select>
+</div>
 
 @code {
+    string Error = string.Empty;
+    List<Customer> customers = new List<Customer>();
+    protected override async Task OnInitializedAsync()
+    {
+        customers.Add(new Customer()
+            {
+                Id = 0,
+                FistName = "Someone",
+                LastName = "LastName",
+                Address = "A new Address",
+                PhoneNumber = 123456789
+            });
+    }
+
 
 }

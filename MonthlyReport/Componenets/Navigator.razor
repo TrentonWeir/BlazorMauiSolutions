@@ -1,0 +1,21 @@
+﻿
+<nav class="flex-column">
+    @for (var i = 0; i < links.Count(); i++)
+    {
+        if (i == 0)
+        {
+            <NavButton Href=@links[i].Item1 Name="@links[i].Item2" spanClass="@links[i].Item3" IsFirst="true" />
+        }
+        else
+        {
+            <NavButton Href=@links[i].Item1 Name="@links[i].Item2" spanClass="@links[i].Item3" />
+        }
+    }
+</nav>
+
+
+@code {
+    [Parameter] public List<Tuple<string, string, string>> links { get; set; }
+    [Parameter] public string NavMenuCssClass { get; set; }
+    
+}
