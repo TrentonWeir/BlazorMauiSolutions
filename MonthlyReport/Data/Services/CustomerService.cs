@@ -24,7 +24,7 @@ namespace MonthlyReport.Data.Services
             conn = new SQLiteAsyncConnection(_dbPath);
             await conn.CreateTableAsync<Customer>();
         }
-        public async Task<List<Customer>> GetCustomerAsync(int id)
+        public async Task<List<Customer>> GetCustomerAsync(int id = 0)
         {
             await InitAsync();
             if(id > 0) return new List<Customer>() { await conn.GetAsync<Customer>(id) };

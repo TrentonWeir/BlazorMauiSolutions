@@ -1,54 +1,32 @@
 ﻿
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">MonthlyReport</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <MonthlyReport.Componenets.Navigator links="@links" NavMenuCssClass="@NavMenuCssClass" />
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Recipt">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Recipt
-            </NavLink>
-        </div>
-    </nav>
-</div>
+<MudNavMenu>
+    @foreach(var link in links)
+    {
+        <MudNavLink Href="@link.Item1" Match="@link.Item3">@link.Item2</MudNavLink>
+    }
+</MudNavMenu>
 
 
 @code {
-    public List<Tuple<string, string,string>> links { get; set; } = new List<Tuple<string, string,string>>() 
-    {
-        new Tuple<string, string, string>("/", "Home", string.Empty),
-        new Tuple<string, string, string>("/fetchdata", "Weather", string.Empty),
-        new Tuple<string, string, string>("/counter", "Counter", string.Empty),
-        new Tuple<string, string, string>("/Recitpt", "Recipt", string.Empty)
-    };
-    private bool collapseNavMenu = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
+    public Tuple<string, string, NavLinkMatch> CreateLink(string name, string? href = null, NavLinkMatch match = NavLinkMatch.Prefix)
     {
-        collapseNavMenu = !collapseNavMenu;
+        if (string.IsNullOrEmpty(href)) href = $"/{name.ToLower().Replace(" ", string.Empty)}";
+        return new Tuple<string, string, NavLinkMatch>(href, name, match);
+    }
+
+    public List<Tuple<string, string,NavLinkMatch>> links { get; set; } 
+
+    protected override async Task OnInitializedAsync()
+    {
+        links = new List<Tuple<string, string, NavLinkMatch>>()
+        {
+            CreateLink("Home","/", NavLinkMatch.All),
+            CreateLink("Weather","/fetchdata"),
+            CreateLink( "Counter","/counter"),
+            CreateLink("Recipt"),
+            CreateLink("NewLink"),
+            CreateLink("Customer Managment", "/cust-management"),
+        };
     }
 }

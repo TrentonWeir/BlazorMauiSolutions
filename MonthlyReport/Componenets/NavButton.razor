@@ -1,7 +1,9 @@
-﻿@if (IsFirst)
+﻿
+
+@if (IsFirst)
 {
     <div class="nav-item px-3">
-        <NavLink class="nav-link" href=@Href Match="@NavLinkMatch.All">
+        <NavLink class="nav-link" style="color:white" href=@Href Match="NavLinkMatch.All">
             <span class="@spanClass" aria-hidden="true"></span> @Name
         </NavLink>
     </div>
@@ -25,9 +27,10 @@ else
     [Parameter]
     public string spanClass { get; set; } = string.Empty;
 
+    public string Route { get; set; }
+
     protected override async Task OnInitializedAsync() 
     {
         spanClass = spanClass == string.Empty ? "oi oi-home" : spanClass; 
     }
-
 }

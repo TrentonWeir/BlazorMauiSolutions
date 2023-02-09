@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MonthlyReport.Data.Services;
+using MudBlazor.Services;
 
 namespace MonthlyReport;
 
@@ -16,6 +17,7 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddMauiBlazorWebView();
+		builder.Services.AddMudServices();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
@@ -27,9 +29,9 @@ public static class MauiProgram
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 @"WeatherForecasts.db");
-		var dbCustomerPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"db/Customer.db");
-        var dbItemPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"db/Item.db");
-        var dbReciptPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"db/Recipt.db");
+		var dbCustomerPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Customer.db");
+        var dbItemPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Item.db");
+        var dbReciptPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Recipt.db");
         // Register WeatherForecastService and the SQLite database
         builder.Services.AddSingleton<WeatherForecastService>(
             s => ActivatorUtilities.CreateInstance<WeatherForecastService>(s, dbPath));

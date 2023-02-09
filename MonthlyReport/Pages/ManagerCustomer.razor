@@ -1,0 +1,57 @@
+﻿@page "/cust-management"
+@using Data.Models;
+@inject Data.Services.CustomerService cs
+<h3>ManagerCustomer</h3>
+@if (!string.IsNullOrEmpty(error))
+{
+    <MudText Color="Color.Error">@error</MudText>
+}
+@try
+{
+    @if(customers == null || customers.Count() <= 0)
+    {
+        <p>No Customers Found</p>
+    }
+else
+{
+    <MudTable Items="@customers" Hover="true" Breakpoint="Breakpoint.Sm" 
+            Loading="@loading" LoadingProgressColor="Color.Info">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>First Name</MudTh>
+            <MudTh>Last Name</MudTh>
+            <MudTh>Address</MudTh>
+            <MudTh>Phone Number</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="FName">@context.FistName</MudTd>
+            <MudTd DataLabel="LName">@context.LastName</MudTd>
+            <MudTd DataLabel="Addr">@context.Address</MudTd>
+            <MudTd DataLabel="PNum">@context.PhoneNumber</MudTd>
+        </RowTemplate>
+        </MudTable>
+}
+}
+catch(Exception ex)
+{
+    <MudText Color="Color.Error">@ex.Message</MudText>
+}
+
+
+@code {
+    public bool loading = true;
+    public string error = string.Empty;
+    public List<Customer> customers = new List<Customer>();
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            customers = await cs.GetCustomerAsync();
+        }
+        catch(Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+}
