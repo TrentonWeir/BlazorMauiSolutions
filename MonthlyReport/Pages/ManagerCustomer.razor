@@ -2,52 +2,152 @@
 @using Data.Models;
 @inject Data.Services.CustomerService cs
 <h3>ManagerCustomer</h3>
+
+@if(isAlert)
+{
+    <div>
+        <div>
+            <MudAlert Severity="Severity.Warning" ShowCloseIcon="true" CloseIconClicked="() => Confirm(false)">@alertMessage</MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=>Confirm(false))">NO</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=>Confirm(true))">YES</MudButton>
+
+        </div>
+    </div>
+}
 @if (!string.IsNullOrEmpty(error))
 {
     <MudText Color="Color.Error">@error</MudText>
 }
+@if (showAddCust)
+{
+    <MudContainer MaxWidth="MaxWidth.Medium">
+        <MudGrid>
+            <MudItem xs="12" sm="7">
+                <MudPaper Class="pa-4">
+                    <div class="d-flex align-center justify-space-between">
+                        <div></div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" aria-label="delete" OnClick="(e) => ClosePopup()" />
+                    </div>
+                    <MudForm @ref="@form">
+                        <MudTextField T="string" Variant="Variant.Text" Label="FirstName" @bind-Value="cust.FistName" />
+                        <MudTextField T="string" Variant="Variant.Text" Label="LastName" @bind-Value="cust.LastName" />
+                        <MudTextField T="string" Variant="Variant.Text" Label="Address" @bind-Value="cust.Address" />
+                        <MudTextField T="string" Mask="@(new PatternMask("000-000-0000"))" Variant="Variant.Text" Label="PhoneNumeber" @bind-Value="cust.PhoneNumber" />
+                            <p>@testing</p>
+                    </MudForm>
+                    <div class="d-flex align-center justify-space-between">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=>form.Validate())">Validate</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="@(()=>form.Reset())" Class="mx-2">Reset</MudButton>
+                        <MudButton Variant="Variant.Filled" DisableElevation="true" OnClick="@(()=>form.ResetValidation())">Reset Validation</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=> SaveCustomer())">Save Customer</MudButton>
+
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+        </MudContainer>
+}
 @try
 {
-    @if(customers == null || customers.Count() <= 0)
+    @if (customers == null || customers.Count() <= 0)
     {
         <p>No Customers Found</p>
     }
-else
-{
-    <MudTable Items="@customers" Hover="true" Breakpoint="Breakpoint.Sm" 
-            Loading="@loading" LoadingProgressColor="Color.Info">
-        <HeaderContent>
-            <MudTh>Id</MudTh>
-            <MudTh>First Name</MudTh>
-            <MudTh>Last Name</MudTh>
-            <MudTh>Address</MudTh>
-            <MudTh>Phone Number</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Id">@context.Id</MudTd>
-            <MudTd DataLabel="FName">@context.FistName</MudTd>
-            <MudTd DataLabel="LName">@context.LastName</MudTd>
-            <MudTd DataLabel="Addr">@context.Address</MudTd>
-            <MudTd DataLabel="PNum">@context.PhoneNumber</MudTd>
-        </RowTemplate>
+    else
+    {
+        <MudTable Items="@customers" Hover="true" Breakpoint="Breakpoint.Sm"
+          Loading="@loading" LoadingProgressColor="Color.Info">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>First Name</MudTh>
+                <MudTh>Last Name</MudTh>
+                <MudTh>Address</MudTh>
+                <MudTh>Phone Number</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id"><MudIconButton Icon="@Icons.Material.Filled.DeleteForever" OnClick="() => DeleteCustomer(context.Id)"></MudIconButton></MudTd>
+                <MudTd DataLabel="FName">@context.FistName</MudTd>
+                <MudTd DataLabel="LName">@context.LastName</MudTd>
+                <MudTd DataLabel="Addr">@context.Address</MudTd>
+                <MudTd DataLabel="PNum">@context.PhoneNumber</MudTd>
+            </RowTemplate>
         </MudTable>
+    }
 }
-}
-catch(Exception ex)
+catch (Exception ex)
 {
     <MudText Color="Color.Error">@ex.Message</MudText>
 }
+<MudButton ButtonType="ButtonType.Button" Color="Color.Success" OnClick="(e) => OpenPopup()">Add Customer</MudButton>
 
 
 @code {
+    bool isAlert = false;
+    string alertMessage = string.Empty;
+    MudForm form;
+    string testing = string.Empty;
+    public bool success = true;
     public bool loading = true;
     public string error = string.Empty;
     public List<Customer> customers = new List<Customer>();
+    bool showAddCust = false;
+    Customer cust = new Customer();
+    Customer newCust(Customer c) => c = new Customer();
     protected override async Task OnInitializedAsync()
     {
         try
         {
             customers = await cs.GetCustomerAsync();
+        }
+        catch(Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+    void AddNewCustomer()
+    {
+        cust.Id = 0;
+        cust.Address = string.Empty;
+        cust.PhoneNumber = string.Empty;
+        cust.FistName = string.Empty;
+        cust.LastName = string.Empty;
+        OpenPopup();
+    }
+    void ClosePopup() => showAddCust = false;
+    void OpenPopup() => showAddCust = true;
+
+    void AddCustomerValidation()
+    {
+        isAlert = true;
+        alertMessage = "Are you sure you want to add this Customer?";
+    }
+    async Task Confirm(bool confirm) 
+    { 
+        isAlert = false; 
+        alertMessage = string.Empty;
+        if (confirm) await SaveCustomer();
+    }
+    async Task SaveCustomer()
+    {
+        ClosePopup();
+        try
+        {
+            error = string.Empty;
+            var newCust = await cs.CreateUpdateCustomerAsync(cust);
+            customers.Add(newCust);
+        }
+        catch(Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+    async Task DeleteCustomer(int id)
+    {
+        try
+        {
+            var cust = customers.FirstOrDefault(x => x.Id == id);
+            error = string.Empty;
+            await cs.DeleteCustomer(cust);
         }
         catch(Exception ex)
         {

@@ -20,6 +20,7 @@ namespace MonthlyReport.Data.Services
         }
         private async Task InitAsync()
         {
+            //await conn.DropTableAsync<Customer>();
             if (conn != null) return;
             conn = new SQLiteAsyncConnection(_dbPath);
             await conn.CreateTableAsync<Customer>();
@@ -27,12 +28,12 @@ namespace MonthlyReport.Data.Services
         public async Task<List<Customer>> GetCustomerAsync(int id = 0)
         {
             await InitAsync();
-            if(id > 0) return new List<Customer>() { await conn.GetAsync<Customer>(id) };
+            if (id > 0) return new List<Customer>() { await conn.GetAsync<Customer>(id) };
             return await conn.Table<Customer>().ToListAsync();
         }
         public async Task<Customer> CreateUpdateCustomerAsync(Customer customer)
         {
-            if(customer.Id <= 0) await conn.InsertAsync(customer);
+            if (customer.Id <= 0) await conn.InsertAsync(customer);
             else await conn.UpdateAsync(customer);
             return customer;
         }

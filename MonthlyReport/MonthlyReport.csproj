@@ -50,6 +50,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Append.Blazor.Printing" Version="6.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
         <PackageReference Include="MudBlazor" Version="6.1.8" />
         <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />

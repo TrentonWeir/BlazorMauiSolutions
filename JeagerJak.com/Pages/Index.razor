@@ -1,0 +1,34 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary">A Demo Button</MudButton>
+@foreach(var color in colors)
+{
+    <MudPaper>
+        @foreach(var variant in variants)
+        {
+          <MudButton Variant="variant" Color="color">{Variant="@variant", Color="@color"}</MudButton>
+        }
+    </MudPaper>
+}
+
+@code{
+    public List<Variant> variants = new() { Variant.Filled, Variant.Outlined, Variant.Text };
+    public List<Color> colors = new()
+    {
+        Color.Default,
+        Color.Info,
+        Color.Inherit,
+        Color.Success,
+        Color.Warning,
+        Color.Error,
+        Color.Dark,
+        Color.Primary,
+        Color.Secondary,
+        Color.Tertiary,
+        Color.Surface,
+        Color.Transparent
+    };
+}

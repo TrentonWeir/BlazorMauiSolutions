@@ -1,7 +1,8 @@
 ﻿@page "/Recipt"
+
 @using MonthlyReport.Data.Models;
 @inject MonthlyReport.Data.Services.CustomerService CustomerService
-
+@inject IJSRuntime js
 <h3>NewReceipt</h3>
 
 <div>
@@ -12,6 +13,9 @@
         }
     </select>
 </div>
+
+<button onclick="@Print">Print</button>
+
 
 @code {
     string Error = string.Empty;
@@ -24,8 +28,12 @@
                 FistName = "Someone",
                 LastName = "LastName",
                 Address = "A new Address",
-                PhoneNumber = 123456789
+                PhoneNumber = "1234567"
             });
+    }
+    private async Task Print()
+    {
+        await js.InvokeVoidAsync("PrintInvoke");
     }
 
 
