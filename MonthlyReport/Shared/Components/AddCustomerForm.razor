@@ -1,0 +1,37 @@
+﻿@using Data.Models;
+@using Data.Services;
+@inject CustomerService cs
+
+<section>
+    <MudContainer MaxWidth="MaxWidth.Small">
+            <MudForm @ref="form">
+                <MudTextField @bind-Value="@newCustomer.FistName"
+                          Label="First Name" T="string" Required="true" InputType="InputType.Text"
+                          RequiredError="First Name Is Required"  />
+
+                <MudTextField @bind-Value="@newCustomer.LastName"
+                          Label="Last Name" T="string" Required="true" InputType="InputType.Text"
+                          RequiredError="Last Name Is Required"  />
+
+                <MudTextField @bind-Value="@newCustomer.Address"
+                          Label="Address" T="string" Required="true" InputType="InputType.Text"
+                          RequiredError="Address Is Required"  />
+
+                <MudTextField @bind-Value="@newCustomer.PhoneNumber"
+                          Label="Phone Number" T="string" Required="true" InputType="InputType.Text"
+                          RequiredError="Phone Number Is Required" HelperText="000-000-0000"
+                          Mask="@(new PatternMask("000-000-0000"))" />
+                <div class="d-flex">
+                    <MudButton ButtonType="ButtonType.Button" Color="Color.Tertiary" OnClick="() => SubmitNewCustomer()">Add Customer</MudButton>
+                </div>
+            </MudForm>
+    </MudContainer>
+</section>
+
+@code {
+    [Parameter]
+    public Customer newCustomer { get; set; }
+    [Parameter]
+    public Action SubmitNewCustomer { get; set; }
+    MudForm form = new MudForm();
+}

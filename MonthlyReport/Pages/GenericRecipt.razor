@@ -1,0 +1,105 @@
+﻿@page "/recipt-easy"
+@using Data.Models;
+@inject IJSRuntime js;
+@inject Data.Services.ReciptService rs;
+@inject Data.Services.ItemService its;
+
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <div class="d-flex">
+        <MudText Typo="Typo.h5" Color="Color.Primary">
+            Jeff's Archery Supplies
+        </MudText>
+        <MudSpacer/>
+        <MudText Typo="Typo.h6" Color="Color.Primary">
+            SALE DATE: @DateTime.Now.ToShortDateString()
+        </MudText>
+    </div>
+    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex">
+        <MudTextField T="string" @bind-Value="@Data.CustomerName" Label="Customer Name" />
+        <MudSpacer/>
+        <div class="d-block">
+            <MudTextField T="string" @bind-Value="@Data.Address" Label="Address" />
+            <MudTextField T="string" @bind-Value="@Data.City" Label="City" />
+            <MudTextField T="string" @bind-Value="@Data.Zip" Label="Zip" />
+            <MudTextField T="string" @bind-Value="@Data.State" Label="State" />
+        </div>
+        
+
+    </MudContainer>
+    <MudButton ButtonType="ButtonType.Button" OnClick="() => AddItem()"><MudIcon Icon="@Icons.Material.Outlined.Add" />New Item</MudButton>
+    <MudTable Dense="true" Items="@items" Hover="true" Striped="true" Breakpoint="Breakpoint.None">
+        <HeaderContent>
+            <MudTh Class="d-print-none"></MudTh>
+            <MudTh Style="max-width:5em" >Name</MudTh>
+            <MudTh Style="max-width:3em" >Price</MudTh>
+            <MudTh Style="max-width:3em" >Qty</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Class="d-print-none" DataLabel="Delete">
+                <MudIconButton ButtonType="ButtonType.Button" Icon="@Icons.Material.Filled.Delete"
+                OnClick="() => RemoveItem(context)"/></MudTd>
+            <MudTd Style="max-width:5em" DataLabel="Name"><MudTextField T="string" @bind-Value="@context.Name" /></MudTd>
+            <MudTd Style="max-width:3em" DataLabel="Price"><MudTextField InputType="InputType.Number" T="float" @bind-Value="@context.Price" /></MudTd>
+            <MudTd Style="max-width:3em" DataLabel="Cost"><MudTextField InputType="InputType.Number" T="int" @bind-Value="@context.Qty" /></MudTd>
+        </RowTemplate>
+    </MudTable>
+    <MudSpacer />
+    <MudContainer Class="d-flex" MaxWidth="MaxWidth.Medium">
+        <MudSpacer />
+        
+        <div class="d-block">
+            
+            <MudText Typo="Typo.body1">Total Before Tax: @GetTotal()</MudText>
+            <MudText Typo="Typo.body1">Tax: @GetTax()</MudText>
+            <MudText Typo="Typo.body1">Total Cash: @GetCash()</MudText>
+            <MudText Typo="Typo.body1">Total Card: @GetCard()</MudText>
+        </div>
+    </MudContainer>
+    <MudSpacer/>
+    <MudSpacer/>
+    
+    <MudButton ButtonType="ButtonType.Button" OnClick="() => HandleSave()">
+        <MudIcon Icon="@Icons.Material.Filled.SaveAlt" />
+        Save
+    </MudButton>
+
+
+</MudContainer>
+
+@code {
+    public Recipt Data = new Recipt();
+
+    List<Data.Models.Item> items = new List<Data.Models.Item>();
+    void AddItem() => items.Add(new Data.Models.Item());
+    async Task RemoveItem(Data.Models.Item item)
+    {
+        if (await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this item? ITEM: {item.Name}"))
+        {
+            items.Remove(item);
+        }
+    }
+    double GetTotal() => Math.Round(items.Sum(x => x.Qty * x.Price), 2);
+    double GetTax() => Math.Round(GetTotal() * .07, 2);
+    double GetCash() => Math.Round(GetTotal() + GetTax(), 2);
+    double GetCard() => Math.Round(GetCash() * 1.035, 2);
+
+    private async Task HandleSave()
+    {
+        var rec = await SaveReciptAsync();
+        items.ForEach(async x =>
+        {
+            await SetItemId(rec, x);
+            await SaveItem(x);
+        });
+        await js.InvokeVoidAsync("PrintInvoke");
+    }
+    public async Task<Recipt> SaveReciptAsync()
+    {
+
+        var recipts = await rs.GetReciptAsync();
+        return await rs.CreateUpdateReciptAsync(Data);
+    }
+    public async Task SetItemId(Recipt recipt, Item item) => item.ReciptId = recipt.Id;
+    public async Task SaveItem(Item item) => await its.CreateUpdateItemAsync(item);
+}

@@ -1,7 +1,9 @@
 ﻿@page "/Recipt"
 
-@using MonthlyReport.Data.Models;
-@inject MonthlyReport.Data.Services.CustomerService CustomerService
+@using Data.Models;
+@using System.Linq;
+@using MonthlyReport.Shared.Components;
+@inject Data.Services.CustomerService cs
 @inject IJSRuntime js
 <h3>NewReceipt</h3>
 
@@ -13,28 +15,52 @@
         }
     </select>
 </div>
+<section class="d-print-none">
+    <div class="d-flex">
+        <MudButton
+            ButtonType="ButtonType.Button" OnClick="() => ToggleIconButton()"
+        >
+            @if (!isNewCustomer)
+            {
+                <MudIcon Icon="@Icons.Material.Outlined.Add" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Outlined.Clear" />
+            }
+            New Customer 
+        </MudButton>
+    </div>
+</section>
+@if (isNewCustomer)
+{
+    <AddCustomerForm newCustomer="@newCustomer" SubmitNewCustomer="@SubmitCustomerAndSelect" />
+}
 
-<button onclick="@Print">Print</button>
+
+<MudIconButton Icon="@Icons.Material.Filled.Print" 
+    ButtonType="ButtonType.Button" Color="Color.Tertiary" 
+    OnClick="() => Print()" />
 
 
 @code {
+    Customer newCustomer = new Customer();
     string Error = string.Empty;
+    bool isNewCustomer = false;
     List<Customer> customers = new List<Customer>();
+    MudSelect<Customer> mudSel = new MudBlazor.MudSelect<Customer>();
+    void ToggleIconButton() => isNewCustomer = !isNewCustomer;
     protected override async Task OnInitializedAsync()
     {
-        customers.Add(new Customer()
-            {
-                Id = 0,
-                FistName = "Someone",
-                LastName = "LastName",
-                Address = "A new Address",
-                PhoneNumber = "1234567"
-            });
+        customers = await cs.GetCustomerAsync();
+        customers = customers.OrderBy(x => x.LastName).ToList();
     }
-    private async Task Print()
-    {
-        await js.InvokeVoidAsync("PrintInvoke");
-    }
+    private async Task Print() => await js.InvokeVoidAsync("PrintInvoke");
 
+    private void SubmitCustomerAndSelect()
+    {
+        cs.CreateUpdateCustomerAsync(newCustomer);
+        ToggleIconButton();
+    }
 
 }

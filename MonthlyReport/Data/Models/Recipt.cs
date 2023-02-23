@@ -11,11 +11,12 @@ namespace MonthlyReport.Data.Models
     {
         [PrimaryKey, AutoIncrement] public int Id { get; set; }
         public DateTime AddedDate { get; set; }
-        public List<Item> Items { get; set; }
-        public int CustomerNumber { get; set; }
+        public string CustomerName { get; set; }
+        public string Address { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Zip { get; set; }
         public float Total { get; set; }
-        public float Paid { get; set; }
-        public DateTime PaidDate { get; set; }
         [MaxLength(4000)] public string Summary { get; set; }
     }
 }

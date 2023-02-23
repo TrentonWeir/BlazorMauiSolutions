@@ -10,12 +10,14 @@ namespace MonthlyReport.Data.Models
     public class Item
     {
         [PrimaryKey, AutoIncrement] public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public DateTime Created { get; set; }
+        public int ReciptId { get; set; }
+        [MaxLength(150)] public string Name { get; set; }
+        [MaxLength(300)] public string Description { get; set; }
+        public string CreateDate { get; set; }
         public float Cost { get; set; }
         public float Price { get; set; }
+        public int Qty { get; set; }
         public DateTime Updated { get; set; }
-        public string SerialNumber { get; set; }
+        [MaxLength(150)] public string SerialNumber { get; set; }
     }
 }

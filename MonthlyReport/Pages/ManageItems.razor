@@ -1,0 +1,178 @@
+﻿@page "/ManageProducts"
+
+
+
+@using Data.Models;
+@using System.Linq;
+@inject Data.Services.ItemService it
+<h3>ManagerItem</h3>
+
+@if (isAlert)
+{
+    <div>
+        <div>
+            <MudAlert Severity="Severity.Warning" ShowCloseIcon="true" CloseIconClicked="() => Confirm(false)">@alertMessage</MudAlert>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=>Confirm(false))">NO</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=>Confirm(true))">YES</MudButton>
+
+        </div>
+    </div>
+}
+@if (!string.IsNullOrEmpty(error))
+{
+    <MudText Color="Color.Error">@error</MudText>
+}
+@if (showAdditem)
+{
+    <MudContainer MaxWidth="MaxWidth.Medium">
+        <MudGrid>
+            <MudItem xs="12" sm="7">
+                <MudPaper Class="pa-4">
+                    <div class="d-flex align-center justify-space-between">
+                        <div></div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" aria-label="delete" OnClick="(e) => ClosePopup()" />
+                    </div>
+                    <MudForm @ref="@form">
+                        <MudTextField T="string" Variant="Variant.Outlined" Label="FirstName" @bind-Value="item.Name" />
+                        <MudTextField T="string" Variant="Variant.Outlined" Label="LastName" @bind-Value="item.Description" />
+                        <MudTextField T="float" Mask="@(new PatternMask("0000.00"))" Variant="Variant.Outlined" Label="Address" @bind-Value="item.Cost" />
+                        <MudTextField T="float" Mask="@(new PatternMask("0000.00"))" Variant="Variant.Outlined" Label="Address" @bind-Value="item.Price" />
+                        <MudTextField T="string" Variant="Variant.Outlined" Label="PhoneNumeber" @bind-Value="item.SerialNumber" />
+                        <p>@testing</p>
+                    </MudForm>
+                    <div class="d-flex align-center justify-space-between">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=>form.Validate())">Validate</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="@(()=>form.Reset())" Class="mx-2">Reset</MudButton>
+                        <MudButton Variant="Variant.Filled" DisableElevation="true" OnClick="@(()=>form.ResetValidation())">Reset Validation</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@(()=> SaveItem())">Save Item</MudButton>
+
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+}
+@try
+{
+    @if (Items == null || Items.Count() <= 0)
+    {
+        <p>No Items Found</p>
+    }
+    else
+    {
+        <MudTable Items="@Items.OrderBy(x => x.CreateDate)" Hover="true" Breakpoint="Breakpoint.Sm"
+          Loading="@loading" LoadingProgressColor="Color.Info">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Price</MudTh>
+                <MudTh>Cost</MudTh>
+                <MudTh>Serial Number</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id"><MudIconButton Icon="@Icons.Material.Filled.DeleteForever" OnClick="() => DeleteItem(context.Id)"></MudIconButton></MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Description">@context.Description</MudTd>
+                <MudTd DataLabel="Price">@context.Price</MudTd>
+                <MudTd DataLabel="Cost">@context.Cost</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+}
+catch (Exception ex)
+{
+    <MudText Color="Color.Error">@ex.Message</MudText>
+}
+<MudButton ButtonType="ButtonType.Button" Color="Color.Success" OnClick="(e) => OpenPopup()">Add Item</MudButton>
+
+
+@code {
+    bool isAlert = false;
+    string alertMessage = string.Empty;
+    MudForm form;
+    string testing = string.Empty;
+    public bool success = true;
+    public bool loading = true;
+    public string error = string.Empty;
+    public List<Item> Items = new List<Item>();
+    bool showAdditem = false;
+    Item item = new Item();
+    Item newitem(Item i) => i = new Item();
+    void ToggleLoading() => loading = !loading;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Items = await it.GetItemAsync();
+            ToggleLoading();
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+    void AddNewItem()
+    {
+        item.Id = 0;
+        OpenPopup();
+    }
+    void ClosePopup() => showAdditem = false;
+    void OpenPopup() => showAdditem = true;
+
+    void AddItemValidation()
+    {
+        isAlert = true;
+        alertMessage = "Are you sure you want to add this Item?";
+    }
+    async Task Confirm(bool confirm)
+    {
+        isAlert = false;
+        alertMessage = string.Empty;
+        if (confirm)
+        {
+            if (await SaveItem())
+            {
+                ClearForm();
+            }
+        }
+
+    }
+    void ClearForm()
+    {
+        item.Name = string.Empty;
+        item.Description = string.Empty;
+        item.Price = 0f;
+        item.Cost = 0f;
+        item.SerialNumber = string.Empty;
+    }
+    async Task<bool> SaveItem()
+    {
+        ClosePopup();
+        try
+        {
+            error = string.Empty;
+            var newitem = await it.CreateUpdateItemAsync(item);
+            Items.Add(newitem);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        return false;
+    }
+    async Task DeleteItem(int id)
+    {
+        try
+        {
+            var item = Items.FirstOrDefault(x => x.Id == id);
+            error = string.Empty;
+            await it.DeleteItem(item);
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+}

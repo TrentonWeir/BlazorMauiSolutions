@@ -1,5 +1,6 @@
 ﻿@page "/cust-management"
 @using Data.Models;
+@using System.Linq;
 @inject Data.Services.CustomerService cs
 <h3>ManagerCustomer</h3>
 
@@ -55,7 +56,7 @@
     }
     else
     {
-        <MudTable Items="@customers" Hover="true" Breakpoint="Breakpoint.Sm"
+        <MudTable Items="@customers.OrderBy(x => x.CreateDate)" Hover="true" Breakpoint="Breakpoint.Sm"
           Loading="@loading" LoadingProgressColor="Color.Info">
             <HeaderContent>
                 <MudTh>Id</MudTh>
@@ -93,11 +94,13 @@ catch (Exception ex)
     bool showAddCust = false;
     Customer cust = new Customer();
     Customer newCust(Customer c) => c = new Customer();
+    void ToggleLoading() => loading = !loading;
     protected override async Task OnInitializedAsync()
     {
         try
         {
             customers = await cs.GetCustomerAsync();
+            ToggleLoading();
         }
         catch(Exception ex)
         {
@@ -125,9 +128,23 @@ catch (Exception ex)
     { 
         isAlert = false; 
         alertMessage = string.Empty;
-        if (confirm) await SaveCustomer();
+        if (confirm)
+        {
+            if(await SaveCustomer())
+            {
+                ClearForm();
+            }
+        }
+
     }
-    async Task SaveCustomer()
+    void ClearForm()
+    {
+        cust.FistName = string.Empty;
+        cust.LastName = string.Empty;
+        cust.Address = string.Empty;
+        cust.PhoneNumber = string.Empty;
+    }
+    async Task<bool> SaveCustomer()
     {
         ClosePopup();
         try
@@ -135,11 +152,13 @@ catch (Exception ex)
             error = string.Empty;
             var newCust = await cs.CreateUpdateCustomerAsync(cust);
             customers.Add(newCust);
+            return true;
         }
         catch(Exception ex)
         {
             error = ex.Message;
         }
+        return false;
     }
     async Task DeleteCustomer(int id)
     {

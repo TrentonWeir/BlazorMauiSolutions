@@ -33,6 +33,7 @@ namespace MonthlyReport.Data.Services
         }
         public async Task<Customer> CreateUpdateCustomerAsync(Customer customer)
         {
+            customer.CreateDate = DateTime.Now.ToShortDateString();
             if (customer.Id <= 0) await conn.InsertAsync(customer);
             else await conn.UpdateAsync(customer);
             return customer;

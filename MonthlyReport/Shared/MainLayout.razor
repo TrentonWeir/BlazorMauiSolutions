@@ -1,16 +1,20 @@
 ﻿@inherits LayoutComponentBase
-
+@inject IJSRuntime js
 
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar>
+    <MudAppBar Class="d-print-none">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         Sales Configurator
+        <MudSpacer/>
+        <MudIconButton Icon="@Icons.Material.Filled.Print"
+                       ButtonType="ButtonType.Button" Color="Color.Tertiary"
+                       OnClick="() => Print()" />
     </MudAppBar>
-    <MudDrawer Open="_drawerOpen">
+    <MudDrawer Class="d-print-none" Open="_drawerOpen">
         <NavMenu/>
     </MudDrawer>
     <MudMainContent>
@@ -23,4 +27,5 @@
 @code{
     bool _drawerOpen = true;
     void DrawerToggle() => _drawerOpen = !_drawerOpen;
+    private async Task Print() => await js.InvokeVoidAsync("PrintInvoke");
 }
