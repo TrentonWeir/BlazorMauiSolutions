@@ -1,0 +1,131 @@
+﻿@page "/ping"
+
+<div>
+    <div>
+        <h6>This IP: @localIP</h6>
+    </div>
+</div>
+<div>
+    <input type="text" @bind-value="value" />
+    <MudButton OnClick="() => GetIPInUse()">Ping Me</MudButton>
+</div>
+<div>
+    <input type="text" @bind-value="subnet" />
+    <MudButton OnClick="() => PingAllInSubnet()">Ping All Ips in Subnet</MudButton>
+</div>
+
+
+
+<div class="d-flex">
+    <div class="d-box">
+        <h5>Percent Used:    @percentUsed %</h5>
+        <h5>Percent Unused:     @percentUsed %</h5>
+    </div>
+</div>
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    <MudTable Dense="true" Items="@items" Hover="true" Striped="true" Breakpoint="Breakpoint.Sm">
+        <HeaderContent>
+            <MudTh>Address</MudTh>
+            <MudTh>Result</MudTh>
+
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Address">@context.Address</MudTd>
+            <MudTd DataLabel="Status">@context.Status</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+
+@code {
+
+    List<System.Net.NetworkInformation.PingReply> items = new();
+    string value = System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName())[1].ToString();
+    string subnet = GetSubnet();
+    string localIP = System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName())[1].ToString();
+    int? percentUsed = new();
+    int? percentUnused = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        base.OnInitializedAsync();
+    }
+    public static string GetSubnet(string ip = null)
+    {
+        if(string.IsNullOrEmpty(ip)) ip = System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName())[1].ToString();
+        var ipSplit = ip.Split('.').Take(3);
+        return string.Join('.', ipSplit);
+    }
+    public void PingAllInSubnet()
+    {
+        var options = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount / 2
+            };
+        Parallel.For(0, 255, options, i =>
+        {
+            var ip = $"{subnet}.{i}";
+            items.Add(Ping(ip));
+        });
+        percentUsed = items?.Count() > 0
+        ? items?.Where(x => x.Status == System.Net.NetworkInformation.IPStatus.Success).Count() / items?.Count()
+        : items?.Count();
+
+        percentUnused = items?.Count() > 0
+        ? items?.Where(x => x.Status != System.Net.NetworkInformation.IPStatus.Success).Count() / items?.Count()
+        : items?.Count();
+
+    }
+
+    public async Task GetIPInUse()
+    {
+        var subnet = value;
+        items.Add(Ping(subnet));
+    }
+    public System.Net.NetworkInformation.PingReply Ping(string host, int attemps = 3, int timeout = 50)//200)
+    {
+        System.Net.NetworkInformation.Ping ping = new();
+        System.Net.NetworkInformation.PingReply rping;
+        for(var i = 0; i < attemps; i++)
+        {
+            try
+            {
+                rping = ping.Send(host, timeout);
+                if (rping != null && rping.Status == System.Net.NetworkInformation.IPStatus.Success)
+                {
+                    return rping;
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
+        }
+        return ping.Send(host, timeout);
+
+    }
+
+    //public PingedIps Ping(string host, int attemps = 3, int timeout = 500)
+    //{
+    //    System.Net.NetworkInformation.Ping ping = new();
+    //    System.Net.NetworkInformation.PingReply pingReply;
+    //    for (var i = 0; i < attemps; i++)
+    //    {
+    //        try
+    //        {
+    //            pingReply = ping.Send(host, timeout);
+    //            if (pingReply != null && pingReply.Status == System.Net.NetworkInformation.IPStatus.Success)
+    //            {
+    //                return true;
+    //            }
+    //        }
+    //        catch (Exception ex)
+    //        {
+
+    //        }
+    //    }
+    //    return false;
+    //}
+}

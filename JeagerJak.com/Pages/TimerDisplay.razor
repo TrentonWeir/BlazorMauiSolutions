@@ -1,0 +1,31 @@
+﻿@page "/timers"
+@using System.Threading;
+<h3>TimerDisplay</h3>
+
+<MudText Typo="_Typo" Color="_Color">@_Time</MudText>
+
+
+
+@code {
+    [Parameter] public Typo _Typo { get; set; } = Typo.h6;
+    [Parameter] public Color _Color { get; set; } = Color.Primary;
+
+    string _Time;
+    Timer aTimer;
+
+    protected override void OnInitialized()
+    {
+        aTimer = new Timer(Tick, null, 0, 1000);
+    }
+
+    private void Tick(object _)
+    {
+        _Time = DateTime.Now.ToLongTimeString();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        aTimer?.Dispose();
+    }
+}

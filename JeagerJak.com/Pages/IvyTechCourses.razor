@@ -1,0 +1,96 @@
+﻿@page "/ivytech"
+
+
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudTable Dense="true" Items="@courses" 
+        SortLabel="Sort By"
+        Hover="true" Striped="true" Breakpoint="Breakpoint.None">
+        <HeaderContent>
+            <MudTh Style="max-width:5em">
+                <MudTableSortLabel SortBy="new Func<Course, object>(x =>x.Id)">
+                    Id
+                </MudTableSortLabel>
+                </MudTh>
+            <MudTh Style="max-width:5em">
+                <MudTableSortLabel SortBy="new Func<Course, object>(x =>x.Name)">
+                    Name
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh Style="max-width:5em">
+                <MudTableSortLabel SortBy="new Func<Course, object>(x =>x.Credit)">
+                    Credit
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh Style="max-width:5em">
+                <MudTableSortLabel SortBy="new Func<Course, object>(x =>x.Degree)">
+                    Degree
+                </MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="max-width:5em;" DataLabel="Name">@context.Id</MudTd>
+            <MudTd Style="max-width:5em" DataLabel="Name">@context.Name</MudTd>
+            <MudTd Style="max-width:5em" DataLabel="Name">@context.Credit</MudTd>
+            <MudTd Style="max-width:5em" DataLabel="Name">@context.Degree</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+
+@code {
+    public class Course
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public int Credit { get; set; } = 3;
+        public string? Degree { get; set; }
+    }
+    public List<Course> courses { get; set; }
+    public Course create(string id, string name, int credit = 3, string degree = "CT") => new Course() { Id = id, Name = name, Credit = credit, Degree = degree };
+    public Course createTC(string id, string name, int credit = 3, string degree = "TC") => new Course() { Id = id, Name = name, Credit = credit, Degree = degree };
+    public Course createAAS(string id, string name, int credit = 3, string degree = "AAS") => new Course() { Id = id, Name = name, Credit = credit, Degree = degree };
+
+    protected override void OnInitialized()
+    {
+        courses = new List<Course>()
+        {
+            create("SVAD 150", "Cloud Foundations"),
+            create("SVAD 170", "Monitoring and Issue Resolution"),
+            create("SVAD 220", "Solutions Architect Associate"),
+            create("SVAD 221", "Workforce Preparation: Solutions Architect Associate Certification", 1),
+            create("SVAD 230", "Hybrid Systems"),
+            create("SVAD 260", "Systems Automation and Orchestration"),
+            create("NETI 104", "Introduction to Networking"),
+            createTC("ITSP 136", "WForce Prep CompTIA A+ Cert", 1),
+            createTC("SVAD 111", "Linux and Virtualization Tech"),
+            createTC("SVAD 121", "Enterprise Computing"),
+            createTC("SVAD 150", "Cloud Foundations"),
+            createTC("NETI 104", "Introduction to Networking"),
+            createAAS("SVAD 111", "Linux and Virtualization Tech"),
+            createAAS("SVAD 121", "Enterprise Computing"),
+            createAAS("SVAD 150", "Cloud Foundations"),
+            createAAS("CPIN 269", "Information Tech Project Mgmt"),
+            createAAS("CPIN 279", "Information Technology Capston", 1),
+            createAAS("CSIA 105", "Intro. Cyber Security/Info"),
+            createAAS("NETI 104", "Introduction to Networking"),
+            createAAS("SVAD 260", "Systems Automation and Orchestration"),
+            createAAS("SVAD 170", "Monitoring and Issue Resolution"),
+            createAAS("SVAD 220", "Solutions Architect Associate"),
+            createAAS("SVAD 231 ", "Microsoft Server Admin. I"),
+        };
+        var list = new List<Course>();
+        courses.ForEach(x =>
+        {
+            if (list.Any(i => i.Id == x.Id))
+            {
+                list.Where(i => i.Id == x.Id).First().Degree += $" {x.Degree}";
+            }
+            else
+            {
+                list.Add(x);
+            }
+        });
+        courses = list.OrderBy(x => x.Id).ToList();
+    }
+}

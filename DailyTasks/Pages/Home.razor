@@ -1,0 +1,219 @@
+﻿@page "/"
+@using Data.Models;
+@inject IJSRuntime js;
+@inject Data.Services.DailyTaskService dts;
+@inject Data.ManageExcel mex;
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <div class="d-flex">
+        <MudText Typo="Typo.h5" Color="Color.Primary">
+            Monthly Task Report
+        </MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.h5" Color="Color.Primary">
+            @today
+        </MudText>
+        <MudSpacer />
+        <MudButton Class="d-print-none" ButtonType="ButtonType.Button" OnClick="() => SaveAll()">
+            <MudIcon Icon="@Icons.Material.Filled.SaveAlt" />
+            SAVE
+        </MudButton>
+    </div>
+
+    <MudContainer
+        Class="d-print-none"
+        MaxWidth="MaxWidth.Medium">
+        <MudDatePicker Label="Task Date" @bind-Date="newTask.Date" />
+        <MudTextField Label="Title" T="string" @bind-Value="@newTask.Title" />
+        <MudTextField Label="Description" InputType="InputType.Text" T="string" @bind-Value="@newTask.Description" />
+        <MudTextField Label="Status" InputType="InputType.Text" T="string" @bind-Value="@newTask.Status" Placeholder="In Progress" />
+        <MudTextField Label="Threats" InputType="InputType.Text" T="string" @bind-Value="@newTask.Threats" Placeholder="NONE" />
+    </MudContainer>
+
+    <MudButton 
+        Class="d-print-none"
+        ButtonType="ButtonType.Button" 
+        OnClick="() => SaveTask()">
+        <MudIcon Icon="@Icons.Material.Outlined.Save" />
+        Save Task
+    </MudButton>
+    <MudButton Class="d-print-none"
+               ButtonType="ButtonType.Button"
+               OnClick="() => CreateReportDocument()">
+        <MudIcon Icon="@Icons.Material.Outlined.Report" />
+        Save Task
+    </MudButton>
+@*    <MudTable Dense="true" Items="@items" Hover="true" Striped="true" Breakpoint="Breakpoint.None">
+        <HeaderContent>
+            <MudTh Class="d-print-none"></MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Threats</MudTh>
+            
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="max-width:3em" Class="d-print-none" DataLabel="Delete">
+                <MudIconButton ButtonType="ButtonType.Button" Icon="@Icons.Material.Filled.Delete"
+                               OnClick="() => RemoveItem(context)" />
+                <MudIconButton ButtonType="ButtonType.Button" Icon="@Icons.Material.Filled.Update"
+                               OnClick="() => UpdateItem(context)" />
+            </MudTd>
+            <MudTd  DataLabel="Name"><MudTextField T="string" @bind-Value="@context.Title" /></MudTd>
+            <MudTd  DataLabel="Price"><MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Description" /></MudTd>
+            <MudTd  DataLabel="Cost"><MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Status" Placeholder="In Progress"/></MudTd>
+            <MudTd  DataLabel="Cost"><MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Threats" Placeholder="NONE" /></MudTd>
+        </RowTemplate>
+    </MudTable>*@
+
+   
+
+    
+ 
+
+        <MudTable Striped="true"
+              Hover="true"
+              Breakpoint="Breakpoint.None"
+              FixedHeader="true"
+              Items="@items"
+              GroupBy="@_groupDefintion"
+              GroupFooterClass="mb-4"
+              Dense="true"
+              Class="d-print-table">
+            <ColGroup>
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+            </ColGroup>
+
+            <HeaderContent>
+                <MudTh Class="d-print-none"></MudTh>
+                <MudTh>Title</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Threats</MudTh>
+
+            </HeaderContent>
+
+            <GroupHeaderTemplate>
+                <MudTh Class="mud-table-cell-custom-group" colspan="5">@($"{context.GroupName} : {context.Key}")</MudTh>
+                </GroupHeaderTemplate>
+
+                <RowTemplate>
+                    <MudTd Style="max-width:3em" Class="d-print-none" DataLabel="Delete">
+                        <MudIconButton ButtonType="ButtonType.Button" Icon="@Icons.Material.Filled.Delete"
+                               OnClick="() => RemoveItem(context)" />
+                        <MudIconButton ButtonType="ButtonType.Button" Icon="@Icons.Material.Filled.Update"
+                               OnClick="() => UpdateItem(context)" />
+                    </MudTd>
+                    <MudTd DataLabel="Name"
+                   Class="d-print-table-cell">
+                        <MudTextField T="string" @bind-Value="@context.Title" />
+                    </MudTd>
+                    <MudTd DataLabel="Price"
+                   Class="d-print-table-cell">
+                        <MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Description" />
+                    </MudTd>
+                    <MudTd DataLabel="Cost"
+                   Class="d-print-table-cell">
+                        <MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Status" Placeholder="In Progress" />
+                    </MudTd>
+                    <MudTd DataLabel="Cost"
+                   Class="d-print-table-cell">
+                        <MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Threats" Placeholder="NONE" />
+                    </MudTd>
+                </RowTemplate>
+
+            </MudTable>
+    
+
+
+
+
+
+
+
+</MudContainer>
+    @code {
+    private bool Printing = true;
+    private List<List<DailyTask>> printLists = new();
+    private string today = DateTime.Today.ToString("MMMM");
+    public List<DailyTask> items { get; set; } = new List<DailyTask>();
+    private DailyTask newTask = new()
+        {
+            Date = DateTime.Today,
+            Status = "In Progress",
+            Threats = "NONE"
+        };
+
+    private TableGroupDefinition<DailyTask> _groupDefintion = new()
+        {
+            GroupName = "Dates",
+            Indentation = false,
+            Expandable = true,
+            IsInitiallyExpanded = true,
+            Selector = (e) => e.Date
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tasks = await dts.GetDailyTaskAsync();
+        items = tasks.Where(x => Convert.ToDateTime(x.Date).Month == DateTime.Now.Month).ToList();
+        printLists = await CondenceList(items, 10);
+    }
+
+
+    public void NewInputTask() => newTask = new()
+        {
+            Date = DateTime.Today,
+            Status = "In Progress",
+            Threats = "NONE"
+        };
+
+    async Task SaveAll() => items.ForEach(async x => await dts.CreateUpdateDailyTaskAsync(x));
+    async Task UpdateItem(DailyTask task) => await dts.CreateUpdateDailyTaskAsync(task);
+    async Task SaveTask(){
+        var task = await dts.CreateUpdateDailyTaskAsync(newTask);
+        if (task != null && task.Id != 0)
+        {
+            items.Add(task);
+            NewInputTask();
+        }
+    }
+
+    async Task RemoveItem(DailyTask item)
+    {
+        if (await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this item? ITEM: {item.Title}"))
+        {
+            items.Remove(item);
+        }
+    }
+
+    async Task<List<List<DailyTask>>> CondenceList(List<DailyTask> list, int size)
+    {
+        return list.Select((x, i) => new { Index = i, Value = x })
+                    .GroupBy(x => x.Index / size)
+                    .Select(x => x.Select(v => v.Value).ToList())
+                    .ToList();
+    }
+
+    void CreateReportDocument()
+    {
+        try
+        {
+            mex.CreateReport(items);
+        }
+        catch(Exception ex)
+        {
+            var message = ex.Message;
+        }
+
+    }
+
+    
+
+
+}

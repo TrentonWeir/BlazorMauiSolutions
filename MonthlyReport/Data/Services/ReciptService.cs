@@ -43,5 +43,13 @@ namespace MonthlyReport.Data.Services
             await conn.DeleteAsync(Recipt);
             return Recipt;
         }
+        //public async Task DropTable()
+        //{
+        //    await InitAsync();
+        //    if(conn != null)
+        //    {
+        //        conn.DropTableAsync(_dbPath);
+        //    }
+        //}
     }
 }

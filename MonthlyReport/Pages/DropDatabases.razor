@@ -1,5 +1,10 @@
-﻿<h3>DropDatabases</h3>
-
+﻿@inject Data.Services.ReciptService rs;
+@inject Data.Services.ItemService its;
+@inject Data.Services.CustomerService cs
+<MudButton ButtonType="ButtonType.Button" OnClick="() => DropTables()">Drop Tables</MudButton>
 @code {
-
+    void DropTables()
+    {
+        
+    }
 }

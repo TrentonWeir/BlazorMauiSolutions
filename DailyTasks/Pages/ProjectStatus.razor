@@ -1,0 +1,84 @@
+﻿@*@page "/project"
+@using Data.Models;
+@inject IJSRuntime js;
+@inject Data.Services.UpdateService us;
+@inject Data.Services.ProjectService ps;
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <div class="d-flex">
+        <MudText Typo="Typo.h5" Color="Color.Primary">
+            Project Status
+        </MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.h6" Color="Color.Primary">
+            @DateTime.Now.ToShortDateString()
+        </MudText>
+        <MudButton Class="d-print-none" ButtonType="ButtonType.Button" OnClick="() => SaveAll()">
+            <MudIcon Icon="@Icons.Material.Filled.SaveAlt" />
+            SAVE
+        </MudButton>
+    </div>
+
+    <MudButton ButtonType="ButtonType.Button" OnClick="() => AddProject()">
+        <MudIcon Icon="@Icons.Material.Outlined.Add" />
+        New Project
+    </MudButton>
+
+    <MudTable Dense="true" Items="@items" Hover="true" Striped="true" Breakpoint="Breakpoint.None">
+        <HeaderContent>
+            <MudTh Class="d-print-none"></MudTh>
+            <MudTh Style="max-width:5em">Title</MudTh>
+            <MudTh Style="max-width:3em">Description</MudTh>
+            <MudTh Style="max-width:3em">Status</MudTh>
+            <MudTh Style="max-width:3em">Threats</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Class="d-print-none" DataLabel="Delete">
+                <MudIconButton ButtonType="ButtonType.Button" Icon="@Icons.Material.Filled.Delete"
+                               OnClick="() => RemoveItem(context)" />
+            </MudTd>
+            <MudTd Style="max-width:5em" DataLabel="Name">
+                <MudTextField T="string" @bind-Value="@context.Title" />
+                </MudTd>
+            <MudTd Style="max-width:3em" DataLabel="Price">
+                <MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Description" />
+                </MudTd>
+            <MudTd Style="max-width:3em" DataLabel="Cost">
+                <MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Status" Placeholder="In Progress" />
+                </MudTd>
+            <MudTd Style="max-width:3em" DataLabel="Cost">
+                <MudTextField InputType="InputType.Text" T="string" @bind-Value="@context.Threats" Placeholder="NONE" />
+                </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+@code {
+    public class ProjectStatus
+    {
+        public Project Project { get; set; } = new();
+        public List<Update> Updates { get; set; } = new();
+    }
+
+    public List<ProjectStatus> items { get; set; } = new();
+
+    async Task AddProject() => items.Add(new ProjectStatus()
+    {
+        Project = new() { Date = DateTime.Now };
+        Updates = new() { Update() { Date = DateTime.Now } };
+    });
+
+    async Task SaveAll() => items.ForEach(async x => {
+         
+    });
+
+    async Task RemoveItem(ProjectStatus item)
+    {
+        if (await js.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this item? ITEM: {item.Title}"))
+        {
+            items.Remove(item);
+        }
+    }
+
+
+}
+*@
